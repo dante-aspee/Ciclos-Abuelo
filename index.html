@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Calculadora de Ciclos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Fraunces:opsz,wght@9..144,600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f7f3ec; --card:#fffdf9; --ink:#1f1b16; --muted:#5b534a; --line:#e3dbcf;
+    --accent:#8a4b14; --accent-soft:#f4e6d6;
+    --fs: 20px;
+  }
+  *{box-sizing:border-box}
+  html{font-size:var(--fs)}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:"Atkinson Hyperlegible",system-ui,sans-serif;line-height:1.5}
+  .wrap{max-width:780px;margin:0 auto;padding:1.2rem 1rem 3rem}
+  header{display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;flex-wrap:wrap;margin-bottom:1rem}
+  h1{font-family:Fraunces,Georgia,serif;font-weight:600;font-size:1.9rem;margin:0;line-height:1.15}
+  .sub{color:var(--muted);margin:.3rem 0 0}
+  .size{display:flex;gap:.4rem;align-items:center}
+  .size span{color:var(--muted);font-size:.85rem}
+  button,select,input{font:inherit;color:inherit}
+  .btn{background:var(--card);border:2px solid var(--line);border-radius:12px;padding:.45rem .9rem;cursor:pointer;min-height:48px}
+  .btn:hover{border-color:var(--accent)}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:700}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:1.2rem;margin-bottom:1rem}
+  h2{font-size:1.15rem;margin:0 0 .8rem}
+  label{display:block;font-weight:700;margin-bottom:.3rem}
+  .row{display:flex;gap:.6rem;flex-wrap:wrap;align-items:flex-end}
+  .row > div{flex:1;min-width:110px}
+  select,input[type=text]{width:100%;min-height:52px;border:2px solid var(--line);border-radius:12px;padding:.4rem .6rem;background:#fff}
+  select:focus,input:focus,.btn:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+  .people{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.9rem}
+  .chip{display:inline-flex;align-items:center;gap:.3rem;background:var(--accent-soft);border:none;border-radius:999px;padding:.35rem .5rem .35rem .9rem;cursor:pointer;min-height:44px}
+  .chip .x{border:none;background:transparent;font-size:1.1rem;cursor:pointer;color:var(--muted);padding:0 .35rem}
+  .err{color:#a11d1d;font-weight:700;margin-top:.6rem}
+  .hidden{display:none}
+
+  .now{border:3px solid var(--accent)}
+  .now .who{color:var(--muted);margin:0}
+  .now .planet{font-family:Fraunces,Georgia,serif;font-size:2.6rem;margin:.1rem 0 .2rem;color:var(--accent);line-height:1.1}
+  .now .desc{font-size:1.1rem;margin:.2rem 0 1rem}
+  .facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:.7rem}
+  .fact{background:var(--bg);border-radius:12px;padding:.7rem .9rem}
+  .fact b{display:block;font-size:1.3rem}
+  .fact span{color:var(--muted);font-size:.9rem}
+  .bar{height:14px;background:var(--line);border-radius:99px;margin-top:1rem;overflow:hidden}
+  .bar i{display:block;height:100%;background:var(--accent);border-radius:99px}
+
+  table{width:100%;border-collapse:collapse}
+  th,td{text-align:left;padding:.6rem .5rem;border-bottom:1px solid var(--line);vertical-align:top}
+  th{color:var(--muted);font-size:.85rem;font-weight:700}
+  tr.cur td{background:var(--accent-soft);font-weight:700}
+  tr.cur td:first-child{border-left:5px solid var(--accent)}
+  td .d{color:var(--muted);font-weight:400;font-size:.9rem;display:block}
+  .tag{display:inline-block;background:var(--accent);color:#fff;font-size:.75rem;border-radius:6px;padding:.05rem .45rem;margin-left:.4rem;vertical-align:middle}
+  .result{margin-top:1rem;padding:1rem;border-radius:12px;background:var(--accent-soft)}
+  .result strong{color:var(--accent)}
+  .note{color:var(--muted);font-size:.85rem;margin-top:.8rem}
+  .wheel-wrap{display:grid;grid-template-columns:1fr;gap:1.2rem;align-items:center}
+  #wheel{width:100%;height:auto;max-width:600px;margin:0 auto;display:block}
+  .advice{background:var(--bg);border-radius:14px;padding:1rem 1.2rem}
+  #wheel .seg{cursor:pointer}
+  #wheel .seg path{stroke:#6b5a48;stroke-width:1.5;transition:filter .15s}
+  #wheel .seg:hover path{filter:brightness(.95)}
+  #wheel text{font-family:"Atkinson Hyperlegible",sans-serif;pointer-events:none}
+  .advice h3{font-size:1.05rem;margin:.6rem 0 .3rem}
+  .advice h3.ok{color:#2f6b2f}
+  .advice h3.ko{color:#a11d1d}
+  .advice ul{margin:0;padding-left:1.2rem}
+  .advice li{margin:.25rem 0}
+  .viewing{font-family:Fraunces,Georgia,serif;font-size:1.5rem;color:var(--accent)}
+  .viewing small{display:block;font-family:"Atkinson Hyperlegible",sans-serif;font-size:.85rem;color:var(--muted)}
+  .cyc-note{margin:.8rem 0 0;padding:.6rem .8rem;border-left:4px solid var(--accent);background:var(--card);border-radius:6px}
+  .transit{margin:.9rem 0 0;padding:.6rem .8rem;background:#fff4d6;border:1px solid #e8c873;border-radius:10px}
+  .origin p{margin:.4rem 0}
+  .origin a{color:var(--accent)}
+  .hint{background:var(--accent-soft);border-radius:12px;padding:.8rem 1rem;margin-bottom:1rem}
+  @media (max-width:560px){ td.hide-sm, th.hide-sm{display:none} .now .planet{font-size:2.1rem} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Calculadora de Ciclos</h1>
+      <p class="sub">Los 7 periodos de 52 días que se cuentan desde cada cumpleaños.</p>
+    </div>
+    <div class="size" aria-label="Tamaño de letra">
+      <span>Letra</span>
+      <button class="btn" id="smaller" aria-label="Letra más chica">A−</button>
+      <button class="btn" id="bigger" aria-label="Letra más grande">A+</button>
+    </div>
+  </header>
+
+  <section class="card" id="wheelCard">
+    <h2 id="wheelTitle">Los Ciclos</h2>
+    <div class="hint" id="hint">Toque un ciclo de la rueda para ver lo que conviene en él. Para saber <b>en qué ciclo está usted</b>, ingrese su fecha de nacimiento más abajo.
+      <button class="btn" id="goDate" style="margin-top:.6rem">Ingresar mi fecha ↓</button>
+    </div>
+    <div class="wheel-wrap">
+      <svg id="wheel" viewBox="-6 -6 452 452" role="img" aria-label="Rueda de los 7 ciclos"></svg>
+      <div class="advice">
+        <div class="viewing" id="viewing"></div>
+        <h3 class="ok">✔ Conviene</h3>
+        <ul id="siList"></ul>
+        <h3 class="ko">✘ No conviene</h3>
+        <ul id="noList"></ul>
+        <p class="cyc-note hidden" id="cycNote"></p>
+        <button class="btn hidden" id="backNow">Volver al ciclo actual</button>
+      </div>
+    </div>
+    <p class="note">Toque cualquier parte de la rueda para ver lo que conviene en ese ciclo.</p>
+  </section>
+
+  <section class="card" id="dateCard">
+    <h2>Fecha de nacimiento</h2>
+    <div class="row">
+      <div style="flex:2;min-width:180px">
+        <label for="name">Nombre (opcional)</label>
+        <input type="text" id="name" placeholder="Ej: Abuelo, Mamá…" autocomplete="off">
+      </div>
+    </div>
+    <div class="row" style="margin-top:.7rem">
+      <div><label for="day">Día</label><select id="day"></select></div>
+      <div style="flex:1.6"><label for="month">Mes</label><select id="month"></select></div>
+      <div><label for="year">Año</label><select id="year"></select></div>
+    </div>
+    <div class="row" style="margin-top:.9rem">
+      <button class="btn primary" id="calc">Calcular</button>
+      <button class="btn" id="save">Guardar persona</button>
+    </div>
+    <div class="err hidden" id="err"></div>
+    <div class="people" id="people"></div>
+  </section>
+
+  <section class="card now hidden" id="nowCard">
+    <p class="who" id="who"></p>
+    <div class="planet" id="planet"></div>
+    <p class="desc" id="desc"></p>
+    <div class="facts">
+      <div class="fact"><b id="fAge"></b><span>Edad</span></div>
+      <div class="fact"><b id="fLeft"></b><span id="fLeftLbl">Días que quedan de este periodo</span></div>
+      <div class="fact"><b id="fNext"></b><span id="fNextLbl">Próximo periodo</span></div>
+    </div>
+    <div class="bar" aria-hidden="true"><i id="barFill"></i></div>
+    <div class="transit hidden" id="transit"></div>
+  </section>
+
+  <section class="card hidden" id="yearCard">
+    <h2 id="yearTitle">Calendario de este año</h2>
+    <table>
+      <thead><tr><th>Periodo</th><th>Desde</th><th>Hasta</th></tr></thead>
+      <tbody id="tbody"></tbody>
+    </table>
+    <p class="note" id="leapNote"></p>
+  </section>
+
+  <section class="card hidden" id="askCard">
+    <h2>¿En qué periodo estaré en otra fecha?</h2>
+    <p class="sub" style="margin-top:-.4rem;margin-bottom:.8rem">Útil para planificar un viaje, una operación o un evento.</p>
+    <div class="row">
+      <div><label for="qDay">Día</label><select id="qDay"></select></div>
+      <div style="flex:1.6"><label for="qMonth">Mes</label><select id="qMonth"></select></div>
+      <div><label for="qYear">Año</label><select id="qYear"></select></div>
+      <div style="flex:0 0 auto"><button class="btn primary" id="ask">Consultar</button></div>
+    </div>
+    <div class="result hidden" id="askResult"></div>
+  </section>
+
+  <section class="card origin">
+    <h2>¿De dónde vienen estos ciclos?</h2>
+    <p>El sistema aparece en el libro <b>«El Dominio del Destino con los Ciclos de la Vida»</b> (en inglés <i>Self Mastery and Fate with the Cycles of Life</i>), escrito en 1929 por H. Spencer Lewis, fundador de la Orden Rosacruz AMORC.</p>
+    <p>Según el libro, el año de cada persona va de cumpleaños a cumpleaños y se divide en siete periodos de unos 52 días. En cada uno, ciertas cosas resultan favorables y otras no. El libro numera los periodos del 1 al 7, y sus descripciones coinciden con los planetas de la hoja: Sol, Luna, Marte, Mercurio, Júpiter, Venus y Saturno.</p>
+    <p>Dos consejos del libro que se aplican aquí:</p>
+    <ul>
+      <li><b>Días de transición:</b> las influencias de un periodo se mezclan con las del siguiente durante algunos días. Para algo importante, conviene evitar los 2 primeros y los 2 últimos días de cada periodo.</li>
+      <li><b>No hace falta exactitud al día:</b> cada periodo dura en realidad 52 días y un poco más, así que un día de diferencia no cambia nada.</li>
+    </ul>
+    <p class="note">Fuentes: <a href="https://www.rosicrucian.org/rosicrucian-books-self-mastery-and-fate-with-the-cycles-of-life" target="_blank" rel="noopener">el libro en el sitio de la Orden Rosacruz</a> · <a href="https://drcherylkasdorf.com/2019/10/07/7-phase-cycle-of-life/" target="_blank" rel="noopener">resumen de los 7 periodos</a></p>
+  </section>
+</div>
+
+<script>
+// "desc": texto de la hoja "Los Ciclos".
+// "si"/"no": consejos de la hoja + los del libro de H. Spencer Lewis
+// "El Dominio del Destino con los Ciclos de la Vida" (1929), resumidos.
+// Estas listas se pueden editar aquí.
+const CYCLES = [
+  { name:"Sol", short:"Plenitud",
+    desc:"Periodo de plenitud: inicio de actividades nuevas, emprender viajes, resistir operaciones quirúrgicas, hay creatividad.",
+    si:["Empezar actividades nuevas","Emprender viajes","Operaciones quirúrgicas (según la hoja, se resisten bien)","Proyectos creativos",
+        "Pedir favores o ayuda a personas influyentes (autoridades, jefes, jueces)","Buscar trabajo, pedir un préstamo, formar una sociedad o invertir","Cuidar la buena reputación y el crédito"],
+    no:[],
+    nota:"Ni la hoja ni el libro señalan nada desfavorable: es el mejor periodo del año para comenzar." },
+  { name:"Luna", short:"Cambiante",
+    desc:"Periodo cambiante: tensiones emocionales, muy emotivo. Pueden iniciarse actividades no importantes, viajes cortos.",
+    si:["Actividades no importantes","Viajes cortos y rápidos","Mudanzas de casa o de negocio","Cambios que empiezan y terminan pronto","Contratar personal","Sembrar"],
+    no:["Empezar cosas importantes o de largo plazo","Tomar decisiones grandes en caliente (es un periodo muy emotivo)","Compromisos permanentes: comprar casa, cambiar de negocio o de profesión","Contratos largos o acuerdos de palabra que no queden por escrito","Prestar o pedir dinero prestado","Apuestas y especulación"] },
+  { name:"Marte", short:"Guerras",
+    desc:"Periodo de guerras: cambios bruscos, suelen haber accidentes. No se aconsejan operaciones quirúrgicas.",
+    si:["Trabajos que piden energía, esfuerzo físico y aguante","Vencer obstáculos a pura constancia","Impulsar el trabajo o el negocio","Andar con cuidado y prudencia"],
+    no:["Operaciones quirúrgicas","Actividades riesgosas (suelen haber accidentes)","Cambios bruscos","Discusiones, peleas y pleitos","Abarcar más de lo que se puede","Descuidarse con el fuego (el libro advierte riesgo de incendios)"] },
+  { name:"Mercurio", short:"Comunicación",
+    desc:"Periodo de la comunicación: ideal para aprender lenguas, viajar al extranjero y establecer relaciones.",
+    si:["Aprender idiomas","Viajar al extranjero","Establecer relaciones","Escribir, estudiar y hacer planes","Seguir las buenas ideas y corazonadas"],
+    no:["Casarse","Comprar casa, terreno o negocio","Firmar sin revisar bien (cuidado con engaños, falsificaciones y robos)","Dejarse llevar por los nervios y la inquietud"] },
+  { name:"Júpiter", short:"Expansión espiritual",
+    desc:"Periodo de expansión espiritual: se aconseja empezar lo trascendental (es como el ciclo del Sol, pero en la onda espiritual).",
+    si:["Empezar lo trascendental","Lo espiritual y filosófico","Hacer crecer los asuntos personales: es el periodo del éxito y la prosperidad","Trámites con abogados, autoridades, médicos o sacerdotes","Iniciar viajes largos","Cobrar deudas","Ser generoso y sociable"],
+    no:["Negocios turbios o especulación poco limpia"] },
+  { name:"Venus", short:"Fiesta",
+    desc:"Periodo de fiesta: de bailar, de pasarlo bien, de amar y ser amado.",
+    si:["Gozar y pasarlo bien","Bailar, fiestas y reuniones","Amar y ser amado","Visitar a familiares y amigos, renovar amistades","Descansar","Arte, música y flores","Viajes cortos"],
+    no:["Viajes largos, sobre todo por mar"],
+    nota:"El libro aclara que los asuntos normales y el trabajo pueden seguir sin problema: les va casi tan bien como en Júpiter." },
+  { name:"Saturno", short:"Meditación",
+    desc:"Periodo de meditación: se recomienda no empezar nada y meditar el año transcurrido. No actúes (vete a tu caverna).",
+    si:["Descansar y meditar","Repasar el año que pasó","Tareas que piden paciencia","Tratar con personas mayores","Asuntos de terrenos, campo y agricultura"],
+    no:["Empezar cualquier cosa nueva","Actuar o tomar iniciativas","Gastos nuevos (salvo para proteger lo que se tiene)","Decisiones impulsivas o tomadas con desánimo","Viajes, sobre todo por mar"],
+    nota:"El libro lo llama el periodo crítico del año: el ánimo tiende al pesimismo. Lo pendiente conviene dejarlo para el periodo del Sol o de la Luna." }
+];
+const LEN = 52;
+const MONTHS = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+
+// ---- fechas como número de día (sin horas, evita problemas con el cambio de hora) ----
+const dayNum = (y,m,d) => Math.round(Date.UTC(y,m,d)/86400000);
+const fromNum = n => { const t=new Date(n*86400000); return {y:t.getUTCFullYear(),m:t.getUTCMonth(),d:t.getUTCDate()}; };
+const isLeap = y => (y%4===0 && y%100!==0) || y%400===0;
+const daysIn = (y,m) => new Date(Date.UTC(y,m+1,0)).getUTCDate();
+const fmt = n => { const f=fromNum(n); return `${f.d} de ${MONTHS[f.m]} de ${f.y}`; };
+const fmtShort = n => { const f=fromNum(n); return `${f.d} ${MONTHS[f.m].slice(0,3)}. ${f.y}`; };
+const today = () => { const t=new Date(); return dayNum(t.getFullYear(),t.getMonth(),t.getDate()); };
+
+// Cumpleaños en un año dado. Nacidos el 29 de febrero: en años no bisiestos se toma el 1 de marzo
+// (igual que la versión original).
+function birthdayIn(y, b){
+  if (b.m===1 && b.d===29 && !isLeap(y)) return dayNum(y,2,1);
+  return dayNum(y,b.m,b.d);
+}
+// Último cumpleaños en o antes de la fecha n
+function lastBirthday(n, b){
+  const y = fromNum(n).y;
+  let s = birthdayIn(y,b);
+  if (s > n) s = birthdayIn(y-1,b);
+  return s;
+}
+function cycleAt(n, b){
+  const start = lastBirthday(n,b);
+  const nextBday = birthdayIn(fromNum(start).y+1,b);
+  const diff = n - start;
+  // 7 × 52 = 364 días. El día 365 (y 366) del año queda dentro de Saturno hasta el próximo cumpleaños.
+  const idx = Math.min(Math.floor(diff/LEN), 6);
+  const pStart = start + idx*LEN;
+  const pEnd = idx===6 ? nextBday-1 : pStart+LEN-1;
+  return {idx, start, nextBday, pStart, pEnd, dayInPeriod: n-pStart+1, periodLen: pEnd-pStart+1};
+}
+function ageAt(n, b){
+  const f = fromNum(n);
+  let a = f.y - b.y;
+  if (n < birthdayIn(f.y,b)) a--;
+  return a;
+}
+
+// ---- interfaz ----
+const $ = id => document.getElementById(id);
+function fillSelects(dSel,mSel,ySel, yFrom, yTo, defY){
+  mSel.innerHTML = MONTHS.map((m,i)=>`<option value="${i}">${m[0].toUpperCase()+m.slice(1)}</option>`).join("");
+  ySel.innerHTML = "";
+  for(let y=yTo;y>=yFrom;y--) ySel.insertAdjacentHTML("beforeend",`<option value="${y}">${y}</option>`);
+  ySel.value = defY;
+  const fixDays = () => {
+    const keep = +dSel.value || 1;
+    const n = daysIn(+ySel.value, +mSel.value);
+    dSel.innerHTML = Array.from({length:n},(_,i)=>`<option value="${i+1}">${i+1}</option>`).join("");
+    dSel.value = Math.min(keep,n);
+  };
+  mSel.onchange = ySel.onchange = fixDays;
+  fixDays();
+}
+const T = fromNum(today());
+fillSelects($("day"),$("month"),$("year"), 1900, T.y, 1950);
+fillSelects($("qDay"),$("qMonth"),$("qYear"), T.y-1, T.y+3, T.y);
+$("qMonth").value=T.m; $("qMonth").onchange(); $("qDay").value=T.d;
+
+let current = null; // {name, y, m, d}
+
+function readBirth(){
+  return { name: $("name").value.trim(), y:+$("year").value, m:+$("month").value, d:+$("day").value };
+}
+function setBirth(p){
+  $("name").value = p.name || "";
+  $("year").value = p.y; $("month").value = p.m; $("month").onchange(); $("day").value = p.d;
+}
+
+function render(){
+  const b = readBirth();
+  const t = today();
+  $("err").classList.add("hidden");
+  if (dayNum(b.y,b.m,b.d) > t){
+    $("err").textContent = "La fecha de nacimiento no puede ser posterior a hoy.";
+    $("err").classList.remove("hidden");
+    ["nowCard","yearCard","askCard"].forEach(id=>$(id).classList.add("hidden"));
+    current = null;
+    wheelState = {c:null, viewIdx:wheelState ? wheelState.viewIdx : 0};
+    $("hint").classList.remove("hidden");
+    $("wheelTitle").textContent = "Los Ciclos";
+    drawWheel(); showAdvice();
+    return;
+  }
+  current = b;
+  const c = cycleAt(t,b);
+  const cyc = CYCLES[c.idx];
+  $("who").textContent = (b.name ? b.name + " — " : "") + "Hoy, " + fmt(t) + ", está en el periodo de:";
+  $("planet").textContent = cyc.name;
+  $("desc").textContent = cyc.desc;
+  $("fAge").textContent = ageAt(t,b) + " años";
+  const left = c.pEnd - t;
+  $("fLeft").textContent = left === 0 ? "Último día" : left + (left===1?" día":" días");
+  $("fLeftLbl").textContent = "Termina el " + fmtShort(c.pEnd);
+  const nextIdx = (c.idx+1)%7;
+  $("fNext").textContent = CYCLES[nextIdx].name;
+  $("fNextLbl").textContent = "Empieza el " + fmtShort(c.pEnd+1);
+  $("barFill").style.width = (100*c.dayInPeriod/c.periodLen).toFixed(1) + "%";
+  const tr = transitText(c);
+  $("transit").innerHTML = tr;
+  $("transit").classList.toggle("hidden", !tr);
+
+  // calendario del año de cumpleaños actual
+  $("yearTitle").textContent = `Calendario: del cumpleaños ${fmtShort(c.start)} al ${fmtShort(c.nextBday-1)}`;
+  $("tbody").innerHTML = CYCLES.map((cy,i)=>{
+    const s = c.start + i*LEN;
+    const e = i===6 ? c.nextBday-1 : s+LEN-1;
+    const cur = i===c.idx;
+    return `<tr class="${cur?"cur":""}"><td>${cy.name}${cur?'<span class="tag">Ahora</span>':""}<span class="d">${cy.desc.split(":")[0]}</span></td><td>${fmtShort(s)}</td><td>${fmtShort(e)}</td></tr>`;
+  }).join("");
+  const sat = c.nextBday - (c.start + 6*LEN);
+  $("leapNote").textContent = `7 periodos × 52 días = 364 días. Los días que sobran hasta el próximo cumpleaños se suman a Saturno (este año dura ${sat} días).`
+    + (b.m===1 && b.d===29 ? " Nacido un 29 de febrero: en años no bisiestos el cumpleaños se cuenta el 1 de marzo." : "");
+
+  wheelState = {c, viewIdx:c.idx};
+  drawWheel(); showAdvice();
+  $("hint").classList.add("hidden");
+  $("wheelTitle").textContent = b.name ? `Los Ciclos de ${b.name}` : "Sus Ciclos";
+  ["nowCard","yearCard","askCard"].forEach(id=>$(id).classList.remove("hidden"));
+  $("askResult").classList.add("hidden");
+  $("wheelCard").scrollIntoView({behavior:"smooth", block:"start"});
+}
+$("goDate").onclick = ()=>{ $("dateCard").scrollIntoView({behavior:"smooth", block:"start"}); $("day").focus({preventScroll:true}); };
+
+// Días de transición: el libro aconseja no tomar decisiones importantes
+// en los 2 primeros ni en los 2 últimos días de cada periodo.
+function transitText(c){
+  if (c.dayInPeriod <= 2){
+    const prev = CYCLES[(c.idx+6)%7].name;
+    return `<b>Día de transición:</b> recién comienza ${CYCLES[c.idx].name} y todavía se mezcla con ${prev}. Mejor esperar un par de días para algo importante.`;
+  }
+  if (c.dayInPeriod >= c.periodLen-1){
+    const next = CYCLES[(c.idx+1)%7].name;
+    return `<b>Día de transición:</b> ${CYCLES[c.idx].name} está terminando y ya se mezcla con ${next}. Mejor esperar un par de días para algo importante.`;
+  }
+  return "";
+}
+
+// ---- rueda ----
+const NS = "http://www.w3.org/2000/svg";
+const CX=220, CY=220, R_OUT=210, R_MID=140, R_IN=68, STEP=360/7;
+const pt = (r,a)=>{ const t=a*Math.PI/180; return [CX+r*Math.sin(t), CY-r*Math.cos(t)]; };
+function sector(r0,r1,a0,a1){
+  const [x1,y1]=pt(r1,a0),[x2,y2]=pt(r1,a1),[x3,y3]=pt(r0,a1),[x4,y4]=pt(r0,a0);
+  return `M${x1},${y1} A${r1},${r1} 0 0 1 ${x2},${y2} L${x3},${y3} A${r0},${r0} 0 0 0 ${x4},${y4} Z`;
+}
+function el(tag, attrs, text){
+  const e=document.createElementNS(NS,tag);
+  for(const k in attrs) e.setAttribute(k,attrs[k]);
+  if(text!=null) e.textContent=text;
+  return e;
+}
+let wheelState = null; // {c, viewIdx}
+function drawWheel(){
+  const {c, viewIdx} = wheelState;
+  const svg=$("wheel"); svg.innerHTML="";
+  CYCLES.forEach((cy,i)=>{
+    const a0=i*STEP, a1=(i+1)*STEP, mid=a0+STEP/2;
+    const isNow=!!c && i===c.idx, isView=i===viewIdx;
+    const sel = !c && isView; // sin fecha: el ciclo elegido se resalta suave
+    const g=el("g",{class:"seg",tabindex:"0",role:"button","aria-label":cy.name});
+    g.appendChild(el("path",{d:sector(R_MID,R_OUT,a0,a1),fill:isNow?"#d9965a":sel?"#f4e6d6":"#fffdf9"}));
+    g.appendChild(el("path",{d:sector(R_IN,R_MID,a0,a1),fill:isNow?"#8a4b14":sel?"#e8d3bb":"#efe6d8"}));
+    // nombre del planeta (anillo interior)
+    const [nx,ny]=pt((R_IN+R_MID)/2,mid);
+    g.appendChild(el("text",{x:nx,y:ny+5,"text-anchor":"middle","font-size":isNow?17:15,"font-weight":"700",fill:isNow?"#fff":"#3d342b"},cy.name.toUpperCase()));
+    // tema + fechas (anillo exterior)
+    const [ox,oy]=pt((R_MID+R_OUT)/2-4,mid);
+    const words=cy.short.split(" ");
+    const lines=[...words];
+    const startY=oy-(lines.length*16)/2 + (c ? 0 : 8);
+    lines.forEach((w,k)=>g.appendChild(el("text",{x:ox,y:startY+k*16+4,"text-anchor":"middle","font-size":14,"font-weight":"700",fill:isNow?"#fff":"#1f1b16"},w)));
+    if (c){
+      const s=c.start+i*LEN, e=i===6?c.nextBday-1:s+LEN-1;
+      const short=n=>{const f=fromNum(n);return `${f.d} ${MONTHS[f.m].slice(0,3)}`;};
+      g.appendChild(el("text",{x:ox,y:startY+lines.length*16+8,"text-anchor":"middle","font-size":11,fill:isNow?"#fff":"#5b534a"},`${short(s)}–${short(e)}`));
+    }
+    g.addEventListener("click",()=>{ wheelState.viewIdx=i; drawWheel(); showAdvice(); });
+    g.addEventListener("keydown",ev=>{ if(ev.key==="Enter"||ev.key===" "){ev.preventDefault(); g.dispatchEvent(new Event("click"));} });
+    svg.appendChild(g);
+  });
+  // contorno grueso del ciclo actual y del que se está mirando
+  const outline=(i,dash)=>svg.appendChild(el("path",{d:sector(R_IN,R_OUT,i*STEP,(i+1)*STEP),fill:"none",stroke:dash?"#5b534a":"#1f1b16","stroke-width":dash?3:5,"stroke-dasharray":dash?"8 6":"none","pointer-events":"none","stroke-linejoin":"round"}));
+  if (!c){
+    outline(viewIdx,false);
+    svg.appendChild(el("circle",{cx:CX,cy:CY,r:R_IN,fill:"#fffdf9",stroke:"#6b5a48","stroke-width":1.5}));
+    svg.appendChild(el("text",{x:CX,y:CY-2,"text-anchor":"middle","font-size":17,"font-weight":"700",fill:"#8a4b14"},"LOS"));
+    svg.appendChild(el("text",{x:CX,y:CY+18,"text-anchor":"middle","font-size":17,"font-weight":"700",fill:"#8a4b14"},"CICLOS"));
+    return;
+  }
+  if (viewIdx!==c.idx) outline(viewIdx,true);
+  outline(c.idx,false);
+  // aguja "HOY"
+  const pos = Math.min(c.idx*LEN + c.dayInPeriod - 0.5, 7*LEN - 0.5);
+  const ang = pos/(7*LEN)*360;
+  const [hx,hy]=pt(R_OUT+4,ang), [bx,by]=pt(R_IN,ang);
+  svg.appendChild(el("line",{x1:bx,y1:by,x2:hx,y2:hy,stroke:"#1f1b16","stroke-width":4,"stroke-linecap":"round","pointer-events":"none"}));
+  svg.appendChild(el("circle",{cx:hx,cy:hy,r:7,fill:"#1f1b16","pointer-events":"none"}));
+  // centro
+  svg.appendChild(el("circle",{cx:CX,cy:CY,r:R_IN,fill:"#fffdf9",stroke:"#6b5a48","stroke-width":1.5}));
+  svg.appendChild(el("text",{x:CX,y:CY-18,"text-anchor":"middle","font-size":14,"font-weight":"700",fill:"#5b534a"},"HOY"));
+  svg.appendChild(el("text",{x:CX,y:CY+8,"text-anchor":"middle","font-size":24,"font-weight":"700",fill:"#8a4b14"},"Día "+c.dayInPeriod));
+  svg.appendChild(el("text",{x:CX,y:CY+30,"text-anchor":"middle","font-size":13,fill:"#5b534a"},"de "+c.periodLen));
+}
+function showAdvice(){
+  const {c, viewIdx} = wheelState;
+  const cy=CYCLES[viewIdx];
+  const isNow = !!c && viewIdx===c.idx;
+  const label = !c ? "" : isNow ? "Ciclo actual — " : "Otro ciclo (no es el actual) — ";
+  $("viewing").innerHTML = `${cy.name}<small>${label}${cy.desc.split(":")[0]}</small>`;
+  $("backNow").classList.toggle("hidden", !c || isNow);
+  $("siList").innerHTML = cy.si.map(x=>`<li>${x}</li>`).join("");
+  $("noList").innerHTML = cy.no.length ? cy.no.map(x=>`<li>${x}</li>`).join("") : `<li style="list-style:none;margin-left:-1.2rem;color:var(--muted)">Nada en especial.</li>`;
+  $("cycNote").textContent = cy.nota || "";
+  $("cycNote").classList.toggle("hidden", !cy.nota);
+}
+$("backNow").onclick = ()=>{ wheelState.viewIdx=wheelState.c.idx; drawWheel(); showAdvice(); };
+
+function ask(){
+  if(!current) return;
+  const n = dayNum(+$("qYear").value, +$("qMonth").value, +$("qDay").value);
+  const r = $("askResult");
+  if (n < dayNum(current.y,current.m,current.d)){
+    r.innerHTML = "Esa fecha es anterior al nacimiento.";
+  } else {
+    const c = cycleAt(n,current);
+    const cy = CYCLES[c.idx];
+    r.innerHTML = `El <b>${fmt(n)}</b> ${current.name? "<b>"+current.name+"</b>" : ""} estará en el periodo de <strong>${cy.name}</strong> (del ${fmtShort(c.pStart)} al ${fmtShort(c.pEnd)}).<br>${cy.desc}`
+      + (transitText(c) ? `<div class="transit">${transitText(c)}</div>` : "");
+  }
+  r.classList.remove("hidden");
+}
+
+// ---- personas guardadas (solo en este navegador) ----
+const KEY = "ciclos-personas";
+function loadPeople(){ try { return JSON.parse(localStorage.getItem(KEY)) || []; } catch(e){ return []; } }
+function savePeople(list){ try { localStorage.setItem(KEY, JSON.stringify(list)); return true; } catch(e){ return false; } }
+function drawPeople(){
+  const list = loadPeople();
+  $("people").innerHTML = list.map((p,i)=>
+    `<span class="chip" data-i="${i}" role="button" tabindex="0">${p.name} <small style="color:var(--muted)">${p.d}/${p.m+1}/${p.y}</small><button class="x" data-del="${i}" aria-label="Borrar ${p.name}">×</button></span>`
+  ).join("");
+}
+$("people").addEventListener("click", e=>{
+  const del = e.target.closest("[data-del]");
+  const list = loadPeople();
+  if (del){ list.splice(+del.dataset.del,1); savePeople(list); drawPeople(); return; }
+  const chip = e.target.closest(".chip");
+  if (chip){ setBirth(list[+chip.dataset.i]); render(); }
+});
+$("save").onclick = ()=>{
+  const b = readBirth();
+  if (!b.name){ $("err").textContent = "Escribe un nombre para poder guardar a la persona."; $("err").classList.remove("hidden"); $("name").focus(); return; }
+  const list = loadPeople().filter(p=>p.name.toLowerCase()!==b.name.toLowerCase());
+  list.push(b);
+  if (!savePeople(list)){ $("err").textContent = "Este navegador no permite guardar datos."; $("err").classList.remove("hidden"); return; }
+  drawPeople(); render();
+};
+
+$("calc").onclick = render;
+$("ask").onclick = ask;
+
+// ---- tamaño de letra ----
+let fs = 20;
+try { fs = +localStorage.getItem("ciclos-fs") || 20; } catch(e){}
+const applyFs = ()=>{ document.documentElement.style.setProperty("--fs", fs+"px"); try{localStorage.setItem("ciclos-fs",fs);}catch(e){} };
+$("bigger").onclick = ()=>{ fs=Math.min(30,fs+2); applyFs(); };
+$("smaller").onclick = ()=>{ fs=Math.max(14,fs-2); applyFs(); };
+applyFs();
+
+drawPeople();
+wheelState = {c:null, viewIdx:0};
+drawWheel(); showAdvice();
+const first = loadPeople()[0];
+if (first){ setBirth(first); render(); }
+</script>
+</body>
+</html>
